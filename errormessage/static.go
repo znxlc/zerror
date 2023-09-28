@@ -6,79 +6,79 @@ package errormessage
 // @Params
 //
 //	args ...any
-//	  single argument - assumes the parameter contains a fully defined ErrorElement or a list of elements
+//	  single argument - assumes the parameter contains a fully defined IElement or a list of elements
 //	    combination of parameters that allows for registering error messages
-//	    []ErrorElement   - adds the list directly
-//	    ErrorElement     - adds the element to the list
+//	    []IElement   - adds the list directly
+//	    IElement     - adds the element to the list
 //	    []map[string]any - imports the list from a generic map if the structure is compatible
 //	    map[string]any   - imports the element from map if compatible
 //	    string | []byte  - assumes this is a json or yaml list
-//	  multiple arguments - assumes you are registering a single ErrorElement and it must be compatible with Add() parameters
+//	  multiple arguments - assumes you are registering a single IElement and it must be compatible with Add() parameters
 func RegisterErrors(args ...any) {
-	itemLen := len(args)
-	if itemLen == 1 { // fully defined errormessage.ErrorElement or a list of elements
-		switch element := args[0].(type) {
-		case []errorElement:
-			registerErrorElementList(element...)
-		case errorElement:
-			registerErrorElementList(element)
-		}
-	} else if itemLen > 1 {
+  itemLen := len(args)
+  if itemLen == 1 { // fully defined errormessage.IElement or a list of elements
+    switch element := args[0].(type) {
+    case []TElement:
+      registerErrorElementList(element...)
+    case TElement:
+      registerErrorElementList(element)
+    }
+  } else if itemLen > 1 {
 
-	}
+  }
 }
 
-// registerErrorElementList adds ErrorElement items to the RegisteredErrorsMap
-func registerErrorElementList(element ...errorElement) {
-	if len(element) > 0 {
-		for _, errElement := range element {
-			RegisteredErrorsMap[errElement.Code] = errElement
-		}
-	}
+// registerErrorElementList adds IElement items to the RegisteredErrorsMap
+func registerErrorElementList(element ...TElement) {
+  if len(element) > 0 {
+    for _, errElement := range element {
+      RegisteredErrorsMap[errElement.Code] = errElement
+    }
+  }
 }
 
 // GetRegisteredElement returns the element defined by key or will return the ErrorGeneric otherwise
-func GetRegisteredElement(key string) ErrorElement {
-	elem := New(ErrorGeneric)
-	if !elem.Load(key) {
-		elem.Load(ErrorGeneric)
-	}
+func GetRegisteredElement(key string) IElement {
+  elem := New(ErrorGeneric)
+  if !elem.Load(key) {
+    elem.Load(ErrorGeneric)
+  }
 
-	return elem
+  return elem
 }
 
-// GenerateErrorElement will create a new ErrorElement from various parameter combinations
+// GenerateErrorElement will create a new IElement from various parameter combinations
 //
 // @Params
 //
 //	 the following combinations are supported:
-//	   ErrorElement, Msg string(optional), Args map[string]any(optional), error(optional)
-//	     provide a prefilled ErrorElement with the ability to overwrite params
+//	   IElement, Msg string(optional), Args map[string]any(optional), error(optional)
+//	     provide a prefilled IElement with the ability to overwrite params
 //	   ErrorCode string, Msg string(optional), Args map[string]any(optional), error(optional)
-//	     define a new ErrorElement from scratch
+//	     define a new IElement from scratch
 //
-//		errorCode [ string | error | errormessage.ErrorElement ]
+//		errorCode [ string | error | errormessage.IElement ]
 //		  string
 //		    the error code we wish to use
 //		    if found in the registered error list, the entire element will be loaded from there
-//		  errormessage.ErrorElement
-//		    a prefilled ErrorElement we wish to edit
+//		  errormessage.IElement
+//		    a prefilled IElement we wish to edit
 //		  error
 //			the errElement.Msg will be set to errorItem.Error()
 //		args
-//		  will represent the rest of the params needed to create a new ErrorElement (based on type)
+//		  will represent the rest of the params needed to create a new IElement (based on type)
 //		  string
-//		     will set the ErrorElement.Msg field to the specified value
+//		     will set the IElement.Msg field to the specified value
 //		  map[string]any
-//		     will add the keys to ErrorElement.Args
+//		     will add the keys to IElement.Args
 //		  TraceElement, []TraceElement
-//		     will append the TraceElement to ErrorElement.Trace
+//		     will append the TraceElement to IElement.Trace
 //		  other
 //		     will be ignored
 //
 // @Returns
 //
-//	errElement [ errormessage.ErrorElement ]
+//	errElement [ errormessage.IElement ]
 //	   the error element
 //	result [ bool ]
 //	   true
@@ -86,7 +86,7 @@ func GetRegisteredElement(key string) ErrorElement {
 //	   false
 //	      the element could not be generated from the provided parameters
 //	      errElement will contain a more detailed error
-func GenerateErrorElement(args ...any) (errElement ErrorElement, result bool) {
-	errElement = New(args)
-	return errElement, true
+func GenerateErrorElement(args ...any) (errElement IElement, result bool) {
+  errElement = New(args)
+  return errElement, true
 }

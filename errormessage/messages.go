@@ -1,5 +1,5 @@
 // The package contains base structs and predefined error messages to be used with zerror package
-// additional errormessages can be registered in the main RegisteredErrorsMap using zerror.RegisterErrors
+// additional errormessages can be registered in the main registeredErrorsMap using zerror.RegisterErrors
 package errormessage
 
 // Error messages have code in the format ENTITY_<ATTRIBUTE/VERB>_LIST
@@ -12,7 +12,7 @@ const (
 
 // RegisteredErrorMap is the main map
 var (
-  RegisteredErrorsMap = map[string]TElement{
+  registeredErrorsMap = map[string]Message{
     ErrorGeneric: {
       Code: ErrorGeneric,
       Msg:  "An error has occurred",

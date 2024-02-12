@@ -1,64 +1,57 @@
 package errormessage
 
 import (
-  "encoding/json"
+	"encoding/json"
 )
 
 // Message is the bare error message struct
 type Message struct {
-  Code string `json:"code"` // error code
-  Msg  string `json:"msg"`  // error message
+	Code string `json:"code"` // error code
+	Msg  string `json:"msg"`  // error message
 }
 
 // tElement represents a single error element
 type tElement struct {
-  Args map[string]any `json:"args"` // error optional args
-  Code string         `json:"code"` // error code
-  Msg  string         `json:"msg"`  // error message
-  //Trace []TraceElement `json:"-"`    // TODO trace list
+	Args map[string]any `json:"args"` // error optional args
+	Code string         `json:"code"` // error code
+	Msg  string         `json:"msg"`  // error message
+	//Trace []TraceElement `json:"-"`    // TODO trace list
 }
 
 // IElement represents the interface for the tElement
 type IElement interface {
-  Error() string
-  Get() IElement
-  GetCode() string
-  GetMsg() string
-  GetArgs() map[string]any
-  Load(string) bool
-  Set(args ...any) bool
-  MarshalJSON() ([]byte, error)
-  UnmarshalJSON([]byte) error
+	Error() string
+	Get() IElement
+	GetCode() string
+	GetMsg() string
+	GetArgs() map[string]any
+	Load(string) bool
+	Set(args ...any) bool
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON([]byte) error
 }
-
-//// TODO TraceElement will contain tracing data
-//type TraceElement struct { // trace element that will be populated in case of panics
-//	File     string `json:"-"` // file name the panic was triggered in
-//	Function string `json:"-"` // function that triggered the panic
-//	Line     uint64 `json:"-"` // line number the panic was triggered at
-//}
 
 // ErrorElementGenerator is an alias for the constructor function New
 type ErrorElementGenerator = func(args ...any) IElement
 
 // New will generate a new tElement starting from ErrorGeneric
 func New(args ...any) IElement {
-  errElement := new(tElement)
-  // setting default value
-  errElement.Load(ErrorGeneric)
-  errElement.Set(args...)
+	errElement := new(tElement)
+	// setting default value
+	errElement.Load(ErrorGeneric)
+	errElement.Set(args...)
 
-  return errElement
+	return errElement
 }
 
 // Error returns an error from current element
 func (ee *tElement) Error() string {
-  return ee.Msg
+	return ee.Msg
 }
 
 // Get returns the tElement packed in the interface
 func (ee *tElement) Get() IElement {
-  return ee
+	return ee
 }
 
 // Set will populate the tElement Fields based on a dynamic combination of parameters
@@ -100,82 +93,81 @@ func (ee *tElement) Get() IElement {
 //	   false
 //	      the element could not be generated from the provided parameters
 //	      errElement will contain a more detailed error
-
 func (ee *tElement) Set(args ...any) bool {
-  itemLen := len(args)
+	itemLen := len(args)
 
-  if itemLen > 0 { // we have at least a parameter
-    for idx, arg := range args {
-      if idx == 0 {
-        // processing the args[0] as errorItem
-        errorItem := arg
-        switch eItem := errorItem.(type) {
-        case string:
-          ee.Code = eItem
-          ee.Load(eItem) // load entire IElement if found in registered list, element will remain unchanged if not found
-        case Message:
-          ee.Code = eItem.Code
-          ee.Msg = eItem.Msg
-        case IElement:
-          ee.Code = eItem.GetCode()
-          ee.Msg = eItem.GetMsg()
-          ee.Args = eItem.GetArgs()
-        case error:
-          ee.Msg = eItem.Error()
-        default: // parameter not supported, the error message will contain the actual error
-          ee.Load(ErrorGenerateParameterInvalid)
-          ee.Args = map[string]any{
-            "errorItem":     errorItem,
-            "args":          args[1:],
-            "expected_type": "string | error | errormessage.IElement",
-          }
-          return false
-        }
-        continue
-      }
+	if itemLen > 0 { // we have at least a parameter
+		for idx, arg := range args {
+			if idx == 0 {
+				// processing the args[0] as errorItem
+				errorItem := arg
+				switch eItem := errorItem.(type) {
+				case string:
+					ee.Code = eItem
+					ee.Load(eItem) // load entire IElement if found in registered list, element will remain unchanged if not found
+				case Message:
+					ee.Code = eItem.Code
+					ee.Msg = eItem.Msg
+				case IElement:
+					ee.Code = eItem.GetCode()
+					ee.Msg = eItem.GetMsg()
+					ee.Args = eItem.GetArgs()
+				case error:
+					ee.Msg = eItem.Error()
+				default: // parameter not supported, the error message will contain the actual error
+					ee.Load(ErrorGenerateParameterInvalid)
+					ee.Args = map[string]any{
+						"errorItem":     errorItem,
+						"args":          args[1:],
+						"expected_type": "string | error | errormessage.IElement",
+					}
+					return false
+				}
+				continue
+			}
 
-      switch element := arg.(type) {
-      case string: // overwriting the Msg
-        ee.Msg = element
-      case error:
-        ee.Msg = element.Error()
-      case map[string]any: // add the arguments
-        ee.Args = element
-      }
-    }
-  }
+			switch element := arg.(type) {
+			case string: // overwriting the Msg
+				ee.Msg = element
+			case error:
+				ee.Msg = element.Error()
+			case map[string]any: // add the arguments
+				ee.Args = element
+			}
+		}
+	}
 
-  return true
+	return true
 }
 
 // GetCode returns the errorMessage.Code
 func (ee *tElement) GetCode() string {
-  return ee.Code
+	return ee.Code
 }
 
 // GetMsg returns the errorMessage.Msg
 func (ee *tElement) GetMsg() string {
-  return ee.Msg
+	return ee.Msg
 }
 
 // GetArgs returns the errorMessage.Args
 func (ee *tElement) GetArgs() map[string]any {
-  return ee.Args
+	return ee.Args
 }
 
 // Load will attempt to create a copy of a registered error and populate the object with its fields
 func (ee *tElement) Load(code string) bool {
-  errElement, found := registeredErrorsMap[code]
-  if found {
-    ee.Code = errElement.Code
-    ee.Msg = errElement.Msg
-  }
-  return found
+	errElement, found := registeredErrorsMap[code]
+	if found {
+		ee.Code = errElement.Code
+		ee.Msg = errElement.Msg
+	}
+	return found
 }
 
 // UnmarshalJSON is a function to make IElement compatible with json.Marshal.
 func (ee *tElement) UnmarshalJSON(data []byte) error {
-  return json.Unmarshal(data, ee)
+	return json.Unmarshal(data, ee)
 }
 
 // MarshalJSON is a function to make IElement compatible with json.Marshal.
@@ -191,5 +183,5 @@ func (ee *tElement) UnmarshalJSON(data []byte) error {
 //	error
 //	  Marshal error, if any occurred
 func (ee *tElement) MarshalJSON() ([]byte, error) {
-  return json.Marshal(ee)
+	return json.Marshal(ee)
 }

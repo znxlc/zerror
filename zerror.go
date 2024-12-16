@@ -50,10 +50,15 @@ func (ze *ZError) Add(args ...any) {
 
   if itemLen > 0 { // we have at least a parameter
     errorItem := args[0]
+    if errorItem == nil { // we skip adding an element if the param is nil
+      return
+    }
     switch element := errorItem.(type) {
     case []errormessage.IElement:
       ze.Errors = append(ze.Errors, element...)
       return
+    case Error:
+      ze.Add(element.GetList())
     default: // generate a new error element
       errElement := ze.ElementGenerator(args...)
       ze.Errors = append(ze.Errors, errElement)

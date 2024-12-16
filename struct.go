@@ -34,6 +34,7 @@ type Error interface {
   Error() string
   GetList() []errormessage.IElement
   Get(...int) errormessage.IElement
+  Has(errCode string) bool
   HasErrors() bool
   SetDefaultElementIndexReturned(string)
 }

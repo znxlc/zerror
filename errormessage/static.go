@@ -5,12 +5,12 @@ import (
   "gopkg.in/yaml.v3"
 )
 
-// RegisterErrors will add predefined error codes to the main errormessage.RegisteredErrorMap so they can be accessed by error code.
+// RegisterErrors will add predefined error codes to the main errormessage.RegisteredErrorMap so they can be accessed by error ErrCode.
 // This is a wrapper function that can be used in a generic app that loads predefined error messages from various places(packages, config files, etc...).
 //
 // @Params
 //
-//	args ...any
+//	Arguments ...any
 //	  single argument - assumes the parameter contains a fully defined IElement or a list of elements
 //	    combination of parameters that allows for registering error messages
 //	    []IElement   - adds the list directly
@@ -20,7 +20,7 @@ import (
 //	    map[string]any   - imports the element from map if compatible
 //	    string | []byte  - assumes this is a json or yaml map or slice
 //	  multiple arguments - assumes you are registering elements that must be compatible with Message structure
-//      Code, Msg string - register a single message with the properties specfied via these args
+//      ErrCode, Message string - register a single message with the properties specfied via these Arguments
 //      Message... - array of messages
 func RegisterErrors(args ...any) {
   itemLen := len(args)
@@ -40,8 +40,8 @@ func RegisterErrors(args ...any) {
       for key, value := range element {
         registeredErrorsMap[key] = value
       }
-    case string: // we have an error code or a json/yaml
-      if !registerProcessStringList(element) { // element was not json/yaml, we assume it is a Code
+    case string: // we have an error ErrCode or a json/yaml
+      if !registerProcessStringList(element) { // element was not json/yaml, we assume it is a ErrCode
         newMessage := Message{
           Code: element,
         }
@@ -68,7 +68,7 @@ func RegisterErrors(args ...any) {
 func registerErrorElementList(args ...IElement) {
   if len(args) > 0 {
     for _, element := range args {
-      registeredErrorsMap[element.GetCode()] = Message{element.GetCode(), element.GetMsg()}
+      registeredErrorsMap[element.Code()] = Message{element.Code(), element.Msg()}
     }
   }
 }
@@ -124,25 +124,25 @@ func GetRegisteredElement(key string) IElement {
 // @Params
 //
 //	 the following combinations are supported:
-//	   IElement, Msg string(optional), Args map[string]any(optional), error(optional)
+//	   IElement, Message string(optional), Arguments map[string]any(optional), error(optional)
 //	     provide a prefilled IElement with the ability to overwrite params
-//	   ErrorCode string, Msg string(optional), Args map[string]any(optional), error(optional)
+//	   ErrorCode string, Message string(optional), Arguments map[string]any(optional), error(optional)
 //	     define a new IElement from scratch
 //
 //		errorCode [ string | error | errormessage.IElement ]
 //		  string
-//		    the error code we wish to use
+//		    the error ErrCode we wish to use
 //		    if found in the registered error list, the entire element will be loaded from there
 //		  errormessage.IElement
 //		    a prefilled IElement we wish to edit
 //		  error
-//			the errElement.Msg will be set to errorItem.Error()
-//		args
+//			the errElement.Message will be set to errorItem.Error()
+//		Arguments
 //		  will represent the rest of the params needed to create a new IElement (based on type)
 //		  string
-//		     will set the IElement.Msg field to the specified value
+//		     will set the IElement.Message field to the specified value
 //		  map[string]any
-//		     will add the keys to IElement.Args
+//		     will add the keys to IElement.Arguments
 //		  TraceElement, []TraceElement
 //		     will append the TraceElement to IElement.Trace
 //		  other

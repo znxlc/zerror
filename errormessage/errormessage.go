@@ -6,7 +6,7 @@ import (
 
 // Message is the bare error message struct
 type Message struct {
-  Code string `json:"code"` // error ErrCode
+  Code string `json:"code"` // error Code
   Msg  string `json:"msg"`  // error message
 }
 

@@ -11,6 +11,7 @@
 package zerror
 
 import (
+  "encoding/json"
   errormessage "github.com/znxlc/zerror/errormessage"
 )
 
@@ -35,16 +36,19 @@ func New(args ...any) Error {
 //
 //	  args[0] [string | map[string]any | error | IElement | []IElement]
 //		    depending on type, this parameter will be interpreted as follows:
-//		    string - Error Code
-//		    error  - will set the Error Code to generic and will set Msg to error.Error()
+//		    string - Error code
+//        Error - will add the errors in the object
+//		    error  - will set the Error code to generic and will set msg to error.Error()
 //		    IElement - will append the IElement to the list, rest of the params will overwrite the initial element
 //		    []IElement - will append the IElement to the list, rest of the params will be ignored
+//        map[string]any - will convert it to IElement and add it to the list
+//        []map[string]any - will convert it to []IElement and add it to the list
 //
 //	  args[1-3] [string | map[string]any | error]
 //			optional parameter list based on type
-//			string - IElement.Msg
-//			map[string]any - optional IElement.Args
-//			error - will set the IElement.Msg to error.Error()
+//			string - IElement.msg
+//			map[string]any - optional IElement.args
+//			error - will set the IElement.msg to error.Error()
 func (ze *ZError) Add(args ...any) {
   itemLen := len(args)
 
@@ -53,12 +57,30 @@ func (ze *ZError) Add(args ...any) {
     if errorItem == nil { // we skip adding an element if the param is nil
       return
     }
+
     switch element := errorItem.(type) {
     case []errormessage.IElement:
       ze.Errors = append(ze.Errors, element...)
       return
+    case errormessage.IElement:
+      ze.Errors = append(ze.Errors, element)
     case Error:
       ze.Add(element.GetList())
+    case map[string]any, map[string]string:
+      em := errormessage.New(element)
+      ze.Add(em)
+    case []map[string]any:
+      for _, errMap := range element {
+        em := errormessage.New(errMap)
+        ze.Add(em)
+      }
+    case []map[string]string:
+      for _, errMap := range element {
+        em := errormessage.New(errMap)
+        ze.Add(em)
+      }
+    case error: // needs to be the last before default since error interface will match others ( like Error)
+      ze.Add(errormessage.ErrorGeneric, element.Error())
     default: // generate a new error element
       errElement := ze.ElementGenerator(args...)
       ze.Errors = append(ze.Errors, errElement)
@@ -90,7 +112,7 @@ func (ze *ZError) Error() string {
   if ElementTextReturned == FlagReturnErrorMsg {
     return errElement.Error()
   }
-  return errElement.GetCode()
+  return errElement.Code()
 }
 
 // Get returns a pointer to the IElement specified
@@ -134,7 +156,7 @@ func (ze *ZError) GetList() []errormessage.IElement {
 // Has will return true if the Errors list contains the code specified
 func (ze *ZError) Has(errCode string) bool {
   for _, errElement := range ze.Errors {
-    if errElement.GetCode() == errCode {
+    if errElement.Code() == errCode {
       return true
     }
   }
@@ -152,4 +174,36 @@ func (ze *ZError) SetDefaultElementIndexReturned(flag string) {
   case FlagReturnFirstErrorElement, FlagReturnLastErrorElement:
     ze.ElementIndexReturned = flag
   }
+}
+
+// UnmarshalJSON is a function to make IElement compatible with json.Marshal.
+func (ze *ZError) UnmarshalJSON(data []byte) (err error) {
+  errList := []errormessage.IElement{}
+  err = json.Unmarshal(data, &errList)
+  if err != nil {
+    return err
+  }
+
+  ze.Errors = errList
+
+  return nil
+}
+
+// MarshalJSON is a function to make IElement compatible with json.Marshal.
+//
+// Inputs:
+//
+//	(none)
+//
+// Outputs:
+//
+//	[]byte
+//	  The JSON representation of the IElement struct
+//	error
+//	  Marshal error, if any occurred
+func (ze *ZError) MarshalJSON() (result []byte, err error) {
+  if ze.HasErrors() {
+    return json.Marshal(ze.Errors)
+  }
+  return json.Marshal(nil)
 }

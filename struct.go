@@ -9,13 +9,13 @@ const (
   FlagReturnLastErrorElement  = "LAST"  // returns the last error in the list by default (Get() and Error() functions)
   FlagReturnFirstErrorElement = "FIRST" // returns the first element in the list when calling Get() and Error()
   FlagReturnErrorCode         = "CODE"  // default text returned when calling Error()
-  FlagReturnErrorMsg          = "MSG"   // return Msg field when calling Error()
+  FlagReturnErrorMsg          = "MSG"   // return msg field when calling Error()
 )
 
 var (
   // ElementIndexReturned represents the default element to be returned when calling single IElement functions like Get() and Error()
   ElementIndexReturned = FlagReturnFirstErrorElement
-  // ElementTextReturned is used by Error() to select which text to return (default is Error Code)
+  // ElementTextReturned is used by Error() to select which text to return (default is Error code)
   ElementTextReturned = FlagReturnErrorCode
   // ElementGenerator will be used to create new error elements and should be a pointer to the constructor of the errorElement used
   DefaultElementGenerator = errormessage.New
@@ -23,9 +23,9 @@ var (
 
 // ZError is the main error structure of the package
 type ZError struct {
-  ElementIndexReturned string                             `json:"-"` // set the default element to be returned when calling Get() or Error()
-  ElementGenerator     errormessage.ErrorElementGenerator // the generator for the error elements (pointer to the New() constructor)
-  Errors               []errormessage.IElement            `json:"errors"` // the error list
+  ElementIndexReturned string                             `json:"-"`                // set the default element to be returned when calling Get() or Error()
+  ElementGenerator     errormessage.ErrorElementGenerator `json:"-"`                // the generator for the error elements (pointer to the New() constructor)
+  Errors               []errormessage.IElement            `json:"errors,omitempty"` // the error list
 }
 
 type Error interface {

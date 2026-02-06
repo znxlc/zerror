@@ -6,35 +6,35 @@ import "github.com/znxlc/zerror/errormessage"
 
 // Error flags and predefined codes
 const (
-  FlagReturnLastErrorElement  = "LAST"  // returns the last error in the list by default (Get() and Error() functions)
-  FlagReturnFirstErrorElement = "FIRST" // returns the first element in the list when calling Get() and Error()
-  FlagReturnErrorCode         = "CODE"  // default text returned when calling Error()
-  FlagReturnErrorMsg          = "MSG"   // return msg field when calling Error()
+	FlagReturnLastErrorElement  = "LAST"  // returns the last error in the list by default (Get() and Error() functions)
+	FlagReturnFirstErrorElement = "FIRST" // returns the first element in the list when calling Get() and Error()
+	FlagReturnErrorCode         = "CODE"  // default text returned when calling Error()
+	FlagReturnErrorMsg          = "MSG"   // return msg field when calling Error()
 )
 
 var (
-  // ElementIndexReturned represents the default element to be returned when calling single IElement functions like Get() and Error()
-  ElementIndexReturned = FlagReturnFirstErrorElement
-  // ElementTextReturned is used by Error() to select which text to return (default is Error code)
-  ElementTextReturned = FlagReturnErrorCode
-  // ElementGenerator will be used to create new error elements and should be a pointer to the constructor of the errorElement used
-  DefaultElementGenerator = errormessage.New
+	// ElementIndexReturned represents the default element to be returned when calling single IElement functions like Get() and Error()
+	ElementIndexReturned = FlagReturnFirstErrorElement
+	// ElementTextReturned is used by Error() to select which text to return (default is Error code)
+	ElementTextReturned = FlagReturnErrorCode
+	// DefaultElementGenerator will be used to create new error elements and should be a pointer to the constructor of the errorElement used
+	DefaultElementGenerator = errormessage.New
 )
 
 // ZError is the main error structure of the package
 type ZError struct {
-  ElementIndexReturned string                             `json:"-"`                // set the default element to be returned when calling Get() or Error()
-  ElementGenerator     errormessage.ErrorElementGenerator `json:"-"`                // the generator for the error elements (pointer to the New() constructor)
-  Errors               []errormessage.IElement            `json:"errors,omitempty"` // the error list
+	ElementIndexReturned string                             `json:"-"`                // set the default element to be returned when calling Get() or Error()
+	ElementGenerator     errormessage.ErrorElementGenerator `json:"-"`                // the generator for the error elements (pointer to the New() constructor)
+	Errors               []errormessage.IElement            `json:"errors,omitempty"` // the error list
 }
 
 type Error interface {
-  Add(...any)
-  Clear()
-  Error() string
-  GetList() []errormessage.IElement
-  Get(...int) errormessage.IElement
-  Has(errCode string) bool
-  HasErrors() bool
-  SetDefaultElementIndexReturned(string)
+	Add(...any)
+	Clear()
+	Error() string
+	GetList() []errormessage.IElement
+	Get(...int) errormessage.IElement
+	Has(errCode string) bool
+	HasErrors() bool
+	SetDefaultElementIndexReturned(string)
 }

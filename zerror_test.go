@@ -302,6 +302,24 @@ func TestUnit_Basic_Functions(t *testing.T) {
 	assert.Equal(t, "CUSTOM_ERROR", errorList[2].Code())
 }
 
+func TestUnit_GetMap(t *testing.T) {
+	args := map[string]any{"field": "name"}
+	ze := New("CUSTOM_ERROR", "test1", args)
+	ze.Add("CUSTOM_ERROR_2", "test2")
+
+	assert.Equal(t, map[string]any{"code": "CUSTOM_ERROR", "msg": "test1", "args": args}, ze.GetMap())
+	assert.Equal(t, "CUSTOM_ERROR_2", ze.GetMap(1)["code"])
+	assert.Equal(t, "test2", ze.GetMap(1)["msg"])
+	assert.Nil(t, ze.GetMap(5))
+	assert.Nil(t, New().GetMap())
+
+	mapList := ze.GetMapList()
+	assert.Len(t, mapList, 2)
+	assert.Equal(t, ze.GetMap(0), mapList[0])
+	assert.Equal(t, ze.GetMap(1), mapList[1])
+	assert.Empty(t, New().GetMapList())
+}
+
 func TestUnit_Get(t *testing.T) {
 	tests := []struct {
 		name              string

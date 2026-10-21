@@ -22,6 +22,7 @@ type ErrElement struct {
 type IElement interface {
   Error() string                   // returns element.Msg (helper for error interface)
   Get() IElement                   // returns error element
+  GetMap() map[string]any          // returns the error element as a map (code, msg, args)
   Code(code ...string) string      // set/get the error ErrCode
   Msg(msg ...string) string        // set/get the error message
   Args(args ...any) map[string]any // set/get the Arguments
@@ -53,6 +54,15 @@ func (ee *ErrElement) Error() string {
 // Get returns the ErrElement packed in the interface
 func (ee *ErrElement) Get() IElement {
   return ee
+}
+
+// GetMap returns the ErrElement as a map containing code, msg and args
+func (ee *ErrElement) GetMap() map[string]any {
+  return map[string]any{
+    "code": ee.ErrCode,
+    "msg":  ee.Message,
+    "args": ee.Arguments,
+  }
 }
 
 // Set will populate the ErrElement Fields based on a dynamic combination of parameters

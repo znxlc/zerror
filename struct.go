@@ -78,6 +78,12 @@ type Error interface {
 	//	*errormessage.IElement
 	//	   errors exist and Errors[index] was found or no index is specified
 	Get(...int) errormessage.IElement
+
+	// GetMap returns the IElement specified (see Get()) as a map containing code, msg and args
+	GetMap(...int) map[string]any
+
+	// GetMapList returns the list of errors as a list of maps (see GetMap())
+	GetMapList() []map[string]any
 	
 	// Has will return true if the Errors list contains the code specified
 	Has(errCode string) bool
